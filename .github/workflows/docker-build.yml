@@ -1,0 +1,32 @@
+ame: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Login to GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+
+      - name: Build Docker Image
+        run: |
+          docker build -t ghcr.io/${{ github.repository }}/worker:latest . --target worker
+          docker build -t ghcr.io/${{ github.repository }}/main:latest . --target main
+          docker tag ghcr.io/${{ github.repository }}/worker:latest ghcr.io/${{ github.repository }}/worker:${{ github.sha }}
+          docker tag ghcr.io/${{ github.repository }}/main:latest ghcr.io/${{ github.repository }}/main:${{ github.sha }}
+
+      - name: Push Docker Image to GitHub Container Registry
+        run: |
+          docker push ghcr.io/${{ github.repository }}/worker:${{ github.sha }}
+          docker push ghcr.io/${{ github.repository }}/main:${{ github.sha }}
+          docker push ghcr.io/${{ github.repository }}/worker:latest
+          docker push ghcr.io/${{ github.repository }}/main:latest
+        
