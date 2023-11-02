@@ -1,0 +1,42 @@
+name: Developing
+
+# Controls when the workflow will run
+on:
+  pull_request:
+    paths:
+      - '**.py'
+      - '**.yml'
+    branches:
+      - '**'
+
+jobs:
+  flake8:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+
+      - uses: actions/checkout@master
+
+      - name: Install flake8
+        run: pip install flake8
+
+      - name: Run flake8
+        uses: py-actions/flake8@v2
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repozitáře
+        uses: actions/checkout@v2
+      - name: Nastavení Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - name: Instalace závislostí
+        run: npm install
+
+      - name: Spuštění linteru
+        run: npm run lint
