@@ -18,15 +18,15 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t ghcr.io/${{ github.repository }}/worker:latest . --target worker
-          docker build -t ghcr.io/${{ github.repository }}/main:latest . --target main
-          docker tag ghcr.io/${{ github.repository }}/worker:latest ghcr.io/${{ github.repository }}/worker:${{ github.sha }}
-          docker tag ghcr.io/${{ github.repository }}/main:latest ghcr.io/${{ github.repository }}/main:${{ github.sha }}
+          docker build -t ghcr.io/blacksmith/img-cacher/worker:latest . --target worker
+          docker build -t ghcr.io/blacksmith/img-cacher/main:latest . --target main
+          docker tag ghcr.io/blacksmith/img-cacher/worker:latest ghcr.io/blacksmith/img-cacher/worker:${{ github.sha }}
+          docker tag ghcr.io/blacksmith/img-cacher/main:latest ghcr.io/blacksmith/img-cacher/main:${{ github.sha }}
 
       - name: Push Docker Image to GitHub Container Registry
         run: |
-          docker push ghcr.io/${{ github.repository }}/worker:${{ github.sha }}
-          docker push ghcr.io/${{ github.repository }}/main:${{ github.sha }}
-          docker push ghcr.io/${{ github.repository }}/worker:latest
-          docker push ghcr.io/${{ github.repository }}/main:latest
+          docker push ghcr.io/blacksmith/img-cacher/worker:${{ github.sha }}
+          docker push ghcr.io/blacksmith/img-cacher/main:${{ github.sha }}
+          docker push ghcr.io/blacksmith/img-cacher/worker:latest
+          docker push ghcr.io/blacksmith/img-cacher/main:latest
         
