@@ -1,0 +1,28 @@
+version: "2.7"
+
+services:
+  redis_stack:
+    image: redis/redis-stack
+    ports:
+      - 6377:6379
+      - 13333:8001
+    volumes:
+      - "./.db:/data"
+  worker:
+    image: img-proxy:worker
+    environment:
+      REDIS_URI: redis://redis_stack:6379/0
+      DATA_DIR: /data
+    volumes:
+      - "./app/data:/data"
+
+  main:
+    image: img-proxy:main
+    environment:
+      REDIS_URI: redis://redis_stack:6379/0
+      DATA_DIR: /data
+      HOST_URL: 'http://192.168.88.20:8000'
+    ports:
+      - 8000:8000
+    volumes:
+      - "./app/data:/data"

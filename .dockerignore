@@ -1,0 +1,9 @@
+.db/
+.env/
+venv/
+app/data/
+app/static/
+tmp/
+stat/
+*/*.pyc
+__pycache__/
