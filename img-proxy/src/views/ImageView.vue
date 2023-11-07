@@ -134,6 +134,20 @@ export default defineComponent({
       }
       this.showDetailMenu = false
     },
+    async addLinkHandler(url) {
+      let resp = await this.socket.sendRequest({
+        cmd: 'add_image_link',
+        params: {
+          uuid: this.image.uuid,
+          url: url
+        }
+      })
+      if (resp.status !== 'ok') {
+        console.error(resp.msg)
+        return
+      }
+      this.showDetailMenu = false
+    },
     async handleKeyDown(event) {
       if (event.ctrlKey && event.key === 'v') {
         let url = ''
@@ -226,7 +240,9 @@ export default defineComponent({
               <a v-if="image.uuid.indexOf(':') !== -1" class="nav-link" href="#"
                  @click="setAsMainImage"><span class="bi bi-check2-circle"></span>Set this image as the main</a>
               <a class="nav-link" href="#"
-                 @click="$refs.UploadImagePopup.open"><span class="bi bi-upload"></span>Upload an alternation</a>
+                 @click="$refs.UploadImagePopup.open('')"><span class="bi bi-upload"></span>Upload an alternation</a>
+              <a class="nav-link" href="#"
+                 @click="$refs.AddLinkPopup.open('')"><span class="bi bi-link"></span>Add link to this image</a>
               <a href="#" class="nav-link" @click="$refs.collectionPopup.open([imagesStore.imageAlternates])"><span class="bi bi-save2"></span>Change collection</a>
               <a href="#" class="nav-link red" @click="deleteImage"><span class="bi bi-trash"></span>Delete this image</a>
             </div>
@@ -236,7 +252,7 @@ export default defineComponent({
       <AlternatesPanel :images="imagesStore.imageAlternates"
                   :selected="image"
                   @select="openImage"
-                  is-open="true"
+                  :is-open="true"
                   minus-width="20%"
                   :headTitle="'Alternates (' + aleternateCount + '):'"
                   v-if="aleternateCount > 1 && showAlternate">
@@ -248,6 +264,8 @@ export default defineComponent({
     </div>
   </div>
   <UploadPopUp ref="UploadImagePopup" @ok="uploadImageHandler"></UploadPopUp>
+  <UploadPopUp ref="AddLinkPopup" @ok="addLinkHandler" title="Add new link to this picture"
+               :validation="false"></UploadPopUp>
   <ChangeCollectionPopup @change-collection="changeCollection" ref="collectionPopup"></ChangeCollectionPopup>
   <ConfirmationPopUp ref="deleteConfirmation" @ok="deleteImages([image])" title="Delete Confirmation">
     Are you sure, that you want to delete this image?

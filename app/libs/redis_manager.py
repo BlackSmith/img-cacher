@@ -72,7 +72,8 @@ class RedisManager:
                     # TextField('url'),
                     TextField('filename', sortable=True),
                     TagField('collection', sortable=True),
-                    NumericField('created', sortable=True)
+                    NumericField('created', sortable=True),
+                    TextField('original_uuid')
                 )
                 task_schema = (TagField('status', sortable=True))
                 matrix_schema = (TextField('similar_images_uuids'))
@@ -81,6 +82,10 @@ class RedisManager:
                 self.ix_matrix = self.r.ft('ix:matrix')
 
                 try:
+                    await self.ix_images.create_index(
+                        images_schema,
+                        definition=IndexDefinition(prefix=["images:"],
+                                                   index_type=IndexType.HASH))
                     await self.ix_matrix.create_index(
                         matrix_schema,
                         definition=IndexDefinition(prefix=["matrix:"],
@@ -89,10 +94,7 @@ class RedisManager:
                         task_schema,
                         definition=IndexDefinition(prefix=["tasks:"],
                                                    index_type=IndexType.HASH))
-                    await self.ix_images.create_index(
-                        images_schema,
-                        definition=IndexDefinition(prefix=["images:"],
-                                                   index_type=IndexType.HASH))
+
                 except Exception:
                     pass
                 return None

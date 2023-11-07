@@ -236,6 +236,10 @@ export default defineComponent({
                   @click="openYandexRefs"></div>
             </td>
           </tr>
+          <tr v-if="selectedImage.original_uuid">
+            <td class="linkHead">Links:</td>
+            <th><p v-for="it in selectedImage.original_uuid.split(';')" class="links">{{ it }}</p></th>
+          </tr>
           <slot name="tableItems"></slot>
           </tbody>
         </table>
@@ -320,6 +324,14 @@ export default defineComponent({
 .preview img {
   border-radius: 5px;
   width: 90%;
+}
+
+.linkHead {
+  vertical-align: top;
+}
+
+.links {
+  margin: 0;
 }
 
 .iconPanel {

@@ -7,11 +7,14 @@ export default {
   props: {
     title: {
       default: 'Upload Image'
+    },
+    validation: {
+      default: true
     }
   },
   data() {
     return {
-      url: ''
+      url: '',
     }
   },
   computed: {
@@ -19,7 +22,7 @@ export default {
       return this.url.length === 0
     },
     isInvalid() {
-      return !this.url.startsWith('http')
+      return this.validation && !this.url.startsWith('http')
     }
   },
   methods: {

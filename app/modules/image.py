@@ -166,14 +166,25 @@ class Image:
             data = await db.r.hgetall(image_request.redis_link)
             if not data:
                 keys = await db.r.keys(f'images:*:{image_request.uuid}')
-                if not keys:
-                    return None
-                data = await db.r.hgetall(keys[0])
-            data['uuid'] = image_request.full_uuid
-            logger.info(f'Load image {data["uuid"]}')
-            # if 'matrix' in data and not with_matrix:
-            #     data.pop('matrix')
+                if keys:
+                    data = await db.r.hgetall(keys[0])
+                    logger.info(f'Load image {data["uuid"]}')
+                else:
+                    # Search by original uuid
+                    query2 = Query(
+                        f'@original_uuid:({image_request.uuid})'
+                    ).dialect(2)
+                    result2 = await db.ix_images.search(query2)
+                    if result2.total == 0:
+                        return None
+                    data = result2.docs[0].__dict__
+                    data.pop('payload')  # Default result of search
+                    data['uuid'] = cls.get_uuid_from_link(data.pop('id'))
+                    logger.info(f'Load image {data["uuid"]} by original link'
+                                f' {image_request.uuid}')
             data = dict_bytes2str(data)
+            if 'uuid' not in data:
+                data['uuid'] = image_request.full_uuid
             return Image(**data)
         else:
             return None
@@ -363,6 +374,8 @@ class Image:
 
     async def delete(self, db: RedisManager):
         topic = f'images:{self.uuid}'
+        original_uuid = ImageRequest.make_uuid(self.url)
+        original_uuid = f'{original_uuid};{self.original_uuid}'
         alternates = await self.get_all_alternates(db)
         uuids = self.uuid.split(':')
         _uuid = uuids[-1]
@@ -379,10 +392,16 @@ class Image:
         os.path.exists(self.full_path) and os.unlink(self.full_path)
         os.path.exists(self.full_thumb_image_path) and os.unlink(
             self.full_thumb_image_path)
+        new_main = await Image.get(ImageRequest(uuid=uuids[0]), db=db)
+        if new_main.original_uuid:
+            new_main.original_uuid = f'{new_main.original_uuid};{original_uuid}'
+        else:
+            new_main.original_uuid = f'{original_uuid}'
+        await new_main.save(db)
         if len(alternates) == 1:
             # The image is only one - no alternates
-            new_main = await Image.get(ImageRequest(uuid=uuids[0]), db=db)
             await new_main.move_from_own_subfolder(db)
+
         self.delete_empty_folders(self.full_path)
         if self.is_main_image and self.collection != '@':
             task = ImageTask().set_action(

@@ -106,9 +106,10 @@ async def root(request: Request) -> Response:
             try:
                 irp.update_uuid()
                 irp.parent_uuid = img.uuid
-                a_img = await Image.download(irp, parent=img,
-                                             user_agent=request.headers.get(
-                                                 'User-Agent'))
+                a_img = await Image.download(
+                    irp,
+                    parent=img,
+                    user_agent=request.headers.get('User-Agent'))
                 await a_img.save(db)
                 await a_img.make_thumb(db)
                 await img.move_to_own_subfolder(db)

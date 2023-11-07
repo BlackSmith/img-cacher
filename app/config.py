@@ -13,7 +13,7 @@ DEFAULT_CONFIG = {
     'DOWNLOAD_TIMEOUT': 15,
     'CHUNK_SIZE': 1024 * 1024,
     'DATA_DIR': 'data',
-    'REDIS_URI': 'redis://localhost:6377/0',
+    'REDIS_URI': 'redis://localhost:6379/0',
     'LOGGING_DEFINITIONS': f'{BASE_DIR}logging.yml',
     'THUMB_WIDTH': 290,
     'THUMB_HEIGHT': 435

@@ -1,10 +1,10 @@
 version: "2.7"
 
 services:
-  redis_stack:
+  redis:
     image: redis/redis-stack
     ports:
-      - 6377:6379
+      - 6379:6379
       - 13333:8001
     volumes:
       - "./.db:/data"

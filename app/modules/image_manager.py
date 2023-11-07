@@ -39,6 +39,22 @@ class ImageManager:
         # data['count'] = len(data['items'])
         return {'data': result}
 
+    @socket_command('add_image_link')
+    @staticmethod
+    async def get_image_alternates(payload, db, **kwargs):
+        params = payload.get('params')
+        irp = ImageRequest(uuid=params.get('uuid'))
+        image = await Image.get(irp, db=db)
+        if not image:
+            return {'status': 'ng', 'msg': 'Image not found.'}
+        uuid = params.get('url', '')
+        if uuid.startswith('http'):
+            uuid = ImageRequest.make_uuid(uuid)
+        if uuid not in image.original_uuid:
+            image.original_uuid = f'{uuid};{image.original_uuid}'
+            await image.save(db)
+        return {'status': 'ok'}
+
     @socket_command('get_collection_list')
     @staticmethod
     async def get_collection_list(payload, db, **kwargs):
