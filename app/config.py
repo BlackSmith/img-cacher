@@ -12,7 +12,6 @@ DEFAULT_CONFIG = {
     'JWT_EXPIRATION': '180',  # days
     'DOWNLOAD_TIMEOUT': 15,
     'CHUNK_SIZE': 1024 * 1024,
-    'TMP_DIR': 'tmp',
     'DATA_DIR': 'data',
     'REDIS_URI': 'redis://localhost:6377/0',
     'LOGGING_DEFINITIONS': f'{BASE_DIR}logging.yml',

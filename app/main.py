@@ -127,7 +127,9 @@ async def root(request: Request) -> Response:
                 return Response(text=str(ex), status=500)
     if not img:
         return Response(text="The image was not found.", status=404)
+    logger.debug('Referer: %s', request.headers.get('Referer', ''))
     if request.query.get('ui', False) or request.query.get('webui', False):
+            # or request.headers.get('Referer', '').startswith(HOST_URL)):
         return web.FileResponse('static/index.html')
     response = StreamResponse()
     response.content_type = img.content_type

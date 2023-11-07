@@ -21,7 +21,7 @@ services:
     environment:
       REDIS_URI: redis://redis_stack:6379/0
       DATA_DIR: /data
-      HOST_URL: 'http://192.168.88.20:8000'
+      HOST_URL: 'http://localhost:8000'
     ports:
       - 8000:8000
     volumes:

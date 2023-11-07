@@ -138,9 +138,14 @@ export default defineComponent({
       if (event.ctrlKey && event.key === 'v') {
         let url = ''
         if (navigator.clipboard) {
-          const result = await navigator.permissions.query({name: "clipboard-write"});
-          if (result.state === 'granted' || result.state === 'prompt') {
-            url = await navigator.clipboard.readText()
+          try {
+            url = await navigator.clipboard.readText();
+          } catch {
+            const permissionName = "clipboard-read" as PermissionName;
+            const result = await navigator.permissions.query({name: permissionName});
+            if (result.state === 'granted' || result.state === 'prompt') {
+              url = await navigator.clipboard.readText();
+            }
           }
           if (!url.startsWith('http')) {
             url = ''

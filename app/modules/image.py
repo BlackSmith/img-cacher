@@ -114,7 +114,7 @@ class Image:
     def get_filename_from_url_link(url) -> dict:
         url = urllib.parse.unquote(url).lower()
         if match := re.match(
-                r'(?P<path>.*)/(?P<filename>[^\.\/\?]+)'
+                r'(?P<path>.*)/(?P<filename>[^\/\?]+)'
                 r'(\.(?P<ext>[^\.\/\?]+))?(\?.*)?$', url):
             parsed = match.groupdict()
             filename = parsed.get('filename', '')
