@@ -275,6 +275,7 @@ class Image:
         self.collection = '@'
         self.url = None
         self._parent = None
+        self.original_uuid = ''
         for key in ['width', 'height', 'size']:
             if key in kwargs:
                 kwargs[key] = int(kwargs[key])
