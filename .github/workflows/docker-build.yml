@@ -18,8 +18,10 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t ghcr.io/blacksmith/img-cacher/worker:latest . --target worker
-          docker build -t ghcr.io/blacksmith/img-cacher/main:latest . --target main
+          docker pull ghcr.io/blacksmith/img-cacher/worker:latest
+          docker build --cache-from ghcr.io/blacksmith/img-cacher/worker:latest -t ghcr.io/blacksmith/img-cacher/worker:latest . --target worker
+          docker pull ghcr.io/blacksmith/img-cacher/main:latest
+          docker build --cache-from ghcr.io/blacksmith/img-cacher/main:latest -t ghcr.io/blacksmith/img-cacher/main:latest . --target main
           docker tag ghcr.io/blacksmith/img-cacher/worker:latest ghcr.io/blacksmith/img-cacher/worker:${{ github.sha }}
           docker tag ghcr.io/blacksmith/img-cacher/main:latest ghcr.io/blacksmith/img-cacher/main:${{ github.sha }}
 
