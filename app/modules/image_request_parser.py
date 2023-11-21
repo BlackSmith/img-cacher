@@ -105,7 +105,7 @@ class ImageRequest:
             self.collection, self.filename = path.split('/', 1)
         if match := re.match(r'.*&?url=(?P<url>.*)$',
                              request.query_string):
-            self.url = urllib.parse.unquote(match.group('url'))
+            self.url = urllib.parse.unquote(match.group('url')).strip()
             if not self.uuid:
-                self.uuid = hashlib.md5(self.url.encode()).hexdigest()
+                self.uuid = self.make_uuid(self.url)
                 self.was_uuid_generated = True

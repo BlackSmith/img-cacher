@@ -114,13 +114,16 @@ class Image:
     def get_filename_from_url_link(url) -> dict:
         url = urllib.parse.unquote(url).lower()
         if match := re.match(
-                r'(?P<path>.*)/(?P<filename>[^\/\?]+)'
-                r'(\.(?P<ext>[^\.\/\?]+))?(\?.*)?$', url):
+                r'(?P<path>.*)/(?P<filename>[^\/\?]+)(\?.*)?$', url):
             parsed = match.groupdict()
             filename = parsed.get('filename', '')
             if filename.isdigit() and parsed.get('path'):
                 filename = os.path.basename(parsed.get('path'))
-            return filename, parsed.get('ext')
+            if (last_dot := filename.rfind('.')) > -1:
+                ext = filename[last_dot+1:]
+                if ext in SUPPORTED_EXTS:
+                    return filename[0:last_dot], ext
+            return filename, None
         return None, None
 
     @staticmethod
@@ -212,9 +215,14 @@ class Image:
         rewrite = True
         if not (url := kwargs.get('url')):
             await Plugin.run(Plugin.EVENT_PARSE_URL, params)
-            url = self.url
+            if url != self.url:
+                url = self.url
+                delimiter = ';' if self.original_uuid else ''
+                self.original_uuid += \
+                    f'{delimiter}{ImageRequest.make_uuid(self.url)}'
             rewrite = False
-        async with (aiohttp.ClientSession() as session):
+        async with (aiohttp.ClientSession(
+                connector=aiohttp.TCPConnector(ssl=False)) as session):
             async with session.get(
                     url,
                     headers=params['_headers'],

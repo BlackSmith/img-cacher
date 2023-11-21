@@ -101,7 +101,7 @@ async def root(request: Request) -> Response:
     if irp.url:
         if img and not irp.was_uuid_generated:
             logger.info(
-                f"Downloading alternate image {irp.url} as "
+                f"Downloading alternate image {irp.url} ({irp.uuid}) as "
                 f"alternate image for {img.filename}.")
             try:
                 irp.update_uuid()
@@ -118,7 +118,8 @@ async def root(request: Request) -> Response:
                 return Response(text=str(ex), status=500)
         elif not img:
             logger.info(
-                f"Downloading image {irp.url} to collection {irp.collection}.")
+                f"Downloading image {irp.url} ({irp.uuid}) to collection"
+                f" {irp.collection}.")
             try:
                 img = await Image.download(irp, user_agent=request.headers.get(
                     'User-Agent'))
@@ -128,7 +129,8 @@ async def root(request: Request) -> Response:
                 return Response(text=str(ex), status=500)
     if not img:
         return Response(text="The image was not found.", status=404)
-    logger.debug('Referer: %s', request.headers.get('Referer', ''))
+    if request.headers.get('Referer', ''):
+        logger.debug('Referer: %s', request.headers.get('Referer', ''))
     if request.query.get('ui', False) or request.query.get('webui', False):
             # or request.headers.get('Referer', '').startswith(HOST_URL)):
         return web.FileResponse('static/index.html')
@@ -139,9 +141,13 @@ async def root(request: Request) -> Response:
         'Content-Disposition'] = (f'inline; filename="'
                                   f'{os.path.basename(img.filename)}"')
     await response.prepare(request)
-    async for data in img.get_content_chunks():
-        await response.write(data)
-    await response.write_eof()
+    try:
+        async for data in img.get_content_chunks():
+            await response.write(data)
+        await response.write_eof()
+    except ConnectionResetError as exc:
+        logger.warning('StreamWriter patched to suppress '
+                       'ConnectionResetError\'s')
     return response
 
 

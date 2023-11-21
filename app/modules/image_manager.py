@@ -43,7 +43,7 @@ class ImageManager:
     @staticmethod
     async def get_image_alternates(payload, db, **kwargs):
         params = payload.get('params')
-        irp = ImageRequest(uuid=params.get('uuid'))
+        irp = ImageRequest(uuid=params.get('uuid', '').split(':')[0])
         image = await Image.get(irp, db=db)
         if not image:
             return {'status': 'ng', 'msg': 'Image not found.'}
