@@ -215,11 +215,7 @@ class Image:
         rewrite = True
         if not (url := kwargs.get('url')):
             await Plugin.run(Plugin.EVENT_PARSE_URL, params)
-            if url != self.url:
-                url = self.url
-                delimiter = ';' if self.original_uuid else ''
-                self.original_uuid += \
-                    f'{delimiter}{ImageRequest.make_uuid(self.url)}'
+            url = self.url
             rewrite = False
         async with (aiohttp.ClientSession(
                 connector=aiohttp.TCPConnector(ssl=False)) as session):
@@ -312,6 +308,13 @@ class Image:
     @property
     def is_main_image(self) -> bool:
         return ':' not in self.uuid
+
+    def add_url_reference(self, url):
+        new_hash = ImageRequest.make_uuid(url)
+        hashes = self.original_uuid.split(';') if self.original_uuid else []
+        if new_hash not in hashes:
+            hashes.append(new_hash)
+            self.original_uuid = ';'.join(hashes)
 
     def make_folder(self):
         (Path(os.path.dirname(self.full_path))

@@ -38,6 +38,9 @@ class RedditPlugin(Plugin):
         except Exception:
             pass
         if url.startswith('https://www.reddit.com/'):
+            # Fix: Someone remove this parameter from url and images are cached
+            # twice.
+            img.add_url_reference(url.replace('&utm_medium=web2x', ''))
             path, _ = url.rsplit('/', 1)
             async with aiohttp.ClientSession() as session:
                 json_url = f'{path}.json'
@@ -49,6 +52,7 @@ class RedditPlugin(Plugin):
                     data = dicts_val('0.data.children.0.data', data)
                     img.json_url = json_url
                     img.url = data['url']
+                    img.add_url_reference(data['url'])
                     img.title = data.get('title')
                     img.filename = normalize_filename(data.get('title'))
                     img.reddit_score = data.get('score', 0)
@@ -56,6 +60,7 @@ class RedditPlugin(Plugin):
                                            data, default=None)
                     if video_info:
                         img.url = video_info['fallback_url']
+                        img.add_url_reference(video_info['fallback_url'])
                         img.height = video_info.get('height')
                         img.width = video_info.get('width')
                         img.bitrate_kbps = video_info.get('bitrate_kbps')
