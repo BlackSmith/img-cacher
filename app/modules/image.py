@@ -311,10 +311,13 @@ class Image:
 
     def add_url_reference(self, url):
         new_hash = ImageRequest.make_uuid(url)
-        hashes = self.original_uuid.split(';') if self.original_uuid else []
+        hashes = set(self.original_uuid.split(';')
+                     if self.original_uuid else [])
         if new_hash not in hashes:
-            hashes.append(new_hash)
-            self.original_uuid = ';'.join(hashes)
+            hashes.add(new_hash)
+        if self.uuid in hashes:
+            hashes.remove(self.uuid)
+        self.original_uuid = ';'.join(hashes)
 
     def make_folder(self):
         (Path(os.path.dirname(self.full_path))
