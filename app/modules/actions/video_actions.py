@@ -50,7 +50,7 @@ class VideoActions(Action):
 
         video_clip = VideoFileClip(image.full_path)
         gif_clip = video_clip.subclip(0, 5) \
-            .fx(fx_resize, (a_image.width, a_image.height))
+            .fx(fx_resize.resize, (a_image.width, a_image.height))
         logger.info(
             f"The video {image.filename} was resized "
             f"({a_image.width}x{a_image.height}) to {a_image.filename}")
