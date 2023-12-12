@@ -310,11 +310,13 @@ class Image:
         return ':' not in self.uuid
 
     def add_url_reference(self, url):
-        new_hash = ImageRequest.make_uuid(url)
+        self.add_uuid_reference(ImageRequest.make_uuid(url))
+
+    def add_uuid_reference(self, uuid):
         hashes = set(self.original_uuid.split(';')
                      if self.original_uuid else [])
-        if new_hash not in hashes:
-            hashes.add(new_hash)
+        if uuid not in hashes:
+            hashes.add(uuid)
         if self.uuid in hashes:
             hashes.remove(self.uuid)
         self.original_uuid = ';'.join(hashes)
@@ -389,8 +391,8 @@ class Image:
 
     async def delete(self, db: RedisManager):
         topic = f'images:{self.uuid}'
-        original_uuid = ImageRequest.make_uuid(self.url)
-        original_uuid = f'{original_uuid};{self.original_uuid}'
+        oi = self.original_uuid.split(';') if self.original_uuid else []
+        original_uuids = [ImageRequest.make_uuid(self.url), *oi]
         alternates = await self.get_all_alternates(db)
         uuids = self.uuid.split(':')
         _uuid = uuids[-1]
@@ -408,10 +410,7 @@ class Image:
         os.path.exists(self.full_thumb_image_path) and os.unlink(
             self.full_thumb_image_path)
         new_main = await Image.get(ImageRequest(uuid=uuids[0]), db=db)
-        if new_main.original_uuid:
-            new_main.original_uuid = f'{new_main.original_uuid};{original_uuid}'
-        else:
-            new_main.original_uuid = f'{original_uuid}'
+        [new_main.add_uuid_reference(u) for u in original_uuids]
         await new_main.save(db)
         if len(alternates) == 1:
             # The image is only one - no alternates
