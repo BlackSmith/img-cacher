@@ -11,6 +11,7 @@ from config import get_config
 from libs.redis_manager import RedisManager
 from libs.socket_manager import SocketManager
 from modules.image_request_parser import ImageRequest
+from modules.plugins import Plugin
 
 logging_profiles = get_yaml(get_config('LOGGING_DEFINITIONS'))
 setup_logging(profiles=logging_profiles)
@@ -129,6 +130,11 @@ async def root(request: Request) -> Response:
                 return Response(text=str(ex), status=500)
     if not img:
         return Response(text="The image was not found.", status=404)
+    else:
+        await Plugin.run(
+            Plugin.EVENT_OPEN_IMAGE,
+            {'img': img, 'db': db, 'url': irp.url}
+        )
     if request.headers.get('Referer', ''):
         logger.debug('Referer: %s', request.headers.get('Referer', ''))
     if request.query.get('ui', False) or request.query.get('webui', False):

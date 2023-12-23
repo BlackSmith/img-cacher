@@ -8,6 +8,7 @@ logger = get_logger('plugin')
 class Plugin:
     EVENTS = {}
     EVENT_PARSE_URL = 1
+    EVENT_OPEN_IMAGE = 2
 
     @classmethod
     def __init_subclass__(cls, **kwargs):

@@ -16,8 +16,24 @@ class RedditPlugin(Plugin):
     @classmethod
     def get_callbacks(cls):
         return {
-            cls.EVENT_PARSE_URL: cls.parse_url
+            cls.EVENT_PARSE_URL: cls.parse_url,
+            cls.EVENT_OPEN_IMAGE: cls.open_image
         }
+
+    @staticmethod
+    async def open_image(action: str, params: dict):
+        url = params['url']
+        img = params['img']
+        db = params['db']
+        if url and url.startswith('https://www.reddit.com/'):
+            org_uuids = img.original_uuid
+            while '&' in url:
+                url, _ = url.rsplit('&', 1)
+                img.add_url_reference(url)
+            url, _ = url.rsplit('?', 1)
+            img.add_url_reference(url)
+            if org_uuids != img.original_uuid:
+                await img.save(db)
 
     @staticmethod
     async def parse_url(action: str, params: dict):
