@@ -137,11 +137,13 @@ class ImageManager:
             return {'status': 'ng', 'msg': 'Image not found.'}
         logger.info(f"Join images (uuids: {uuids}) to image {main_image.uuid}")
         for uuid in uuids:
-            image = await Image.get(ImageRequest(uuid=uuid), db=db)
+            image = await Image.get(ImageRequest(uuid=uuid.split(':')[-1]),
+                                    db=db)
+            alternates = await image.get_all_alternates(db=db) or []
+            print(alternates)
             await image.set_as_alternation_of(main_image, db=db)
-            if alternates := await image.get_all_alternates(db=db):
-                for a_image in alternates:
-                    await a_image.set_as_alternation_of(main_image, db=db)
+            for a_image in alternates:
+                await a_image.set_as_alternation_of(main_image, db=db)
         await main_image.move_to_own_subfolder(db)
         return {'status': 'ok'}
 

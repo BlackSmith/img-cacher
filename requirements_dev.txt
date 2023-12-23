@@ -1,1 +1,2 @@
 aiohttp-devtools==1.1.1
+pytest

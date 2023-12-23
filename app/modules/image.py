@@ -309,6 +309,10 @@ class Image:
     def is_main_image(self) -> bool:
         return ':' not in self.uuid
 
+    @property
+    def uuid_parts(self):
+        return self.uuid.split(':', 1)
+
     def add_url_reference(self, url):
         self.add_uuid_reference(ImageRequest.make_uuid(url))
 
@@ -491,24 +495,27 @@ class Image:
     async def set_as_main(self, db: RedisManager):
         if self.is_main_image:
             return
-        parent_uuid, child_uuid = self.uuid.split(':', 1)
-        original: Image = await Image.get(ImageRequest(uuid=parent_uuid), db)
+        # parent_uuid, child_uuid = self.uuid.split(':', 1)
+        old_main: Image = await Image.get(
+            ImageRequest(uuid=self.uuid_parts[0]), db)
         res = {}
         async with db.r.pipeline(transaction=True) as pipe:
             pipe.multi()
-            if original:
-                iro = ImageRequest(parent_uuid=parent_uuid, url=original.url)
+            if old_main:
+                iro = ImageRequest(parent_uuid=old_main.uuid_parts[0],
+                                   url=old_main.url)
                 iro.update_uuid()
-                await pipe.rename(f'images:{original.uuid}:@',
+                await pipe.rename(f'images:{old_main.uuid}:@',
                                   f'images:{iro.full_uuid}')
                 res['original_main'] = iro.full_uuid
-            await pipe.rename(f'images:{self.uuid}', f'images:{parent_uuid}:@')
+            await pipe.rename(f'images:{self.uuid}',
+                              f'images:{self.uuid_parts[0]}:@')
             await pipe.execute()
         return res
 
     async def set_as_alternation_of(self, image: 'Image', db: RedisManager):
-        org_uuid = self.uuid
-        self.uuid = f'{image.uuid}:{self.uuid}'
+        org_uuid = self.uuid_parts
+        self.uuid = f'{image.uuid_parts[0]}:{self.uuid_parts[-1]}'
         org_filename = self.full_path
         org_thumb = self.full_thumb_image_path
         path = ParsePath.parse(self.filename)
@@ -520,7 +527,11 @@ class Image:
         self.delete_empty_folders(org_filename)
         async with db.r.pipeline(transaction=True) as pipe:
             pipe.multi()
-            await pipe.rename(f'images:{org_uuid}:@', f'images:{self.uuid}')
+            if len(org_uuid) == 1:
+                org_uuid.append('@')
+            await pipe.rename(
+                f'images:{":".join(org_uuid)}',
+                f'images:{self.uuid}')
             await self.save(None, pipe)
             await pipe.execute()
 
