@@ -6,12 +6,17 @@ from .plugin import Plugin
 from libs import dicts_val, normalize_filename
 
 
+# https://www.reddit.com/r/nsfw/comments/18n3n2e/apples/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
+# https://www.reddit.com/r/nsfw/comments/18n3n2e/apples/?utm_source=share&utm_content=share_button
+# https://www.reddit.com/r/nsfw/comments/18n3n2e/apples/?utm_source=share
+# https://www.reddit.com/r/nsfw/comments/18n3n2e/apples/
+
 class RedditPlugin(Plugin):
 
     @classmethod
     def get_callbacks(cls):
         return {
-            cls.EVENT_PARSE_URL: cls.parse_url,
+            cls.EVENT_PARSE_URL: cls.parse_url
         }
 
     @staticmethod
